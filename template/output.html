@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Calculation Results{% endblock %}
+{% block content %}
+<section class="results-section">
+    <h2>Calculation Results</h2>
+
+    <div class="result-block">
+        <h3>Used Equation:</h3>
+        <p class="equation">{{ formulas_global|safe }}</p>
+    </div>
+
+    <div class="result-block">
+        <h3>Output:</h3>
+        <p class="output">{{ Output }}</p>
+    </div>
+
+    <div class="result-block">
+        <h3>Step-by-Step Method:</h3>
+        <p class="steps">{{ detailresponse|safe }}</p>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('index') }}" class="btn">Go Back</a>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">New Calculation</a>
+    </div>
+</section>
+{% endblock %}

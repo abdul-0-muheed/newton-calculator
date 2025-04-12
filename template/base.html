@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home - Formula Calculator{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <p>Loading, please wait...</p>
+    </div>
+    <header>
+        <h1>Welcome to the Formula Calculator</h1>
+        <p>Calculate formulas dynamically with Team Joint</p>
+    </header>
+    <main>
+        <section class="form-section">
+            <form action="{{ url_for('ask') }}" method="post" onsubmit="showLoadingScreen()">
+                <input type="text" name="user_input" placeholder="Enter what to calculate" required>
+                <input type="submit" value="Calculate">
+            </form>
+        </section>
+        <section class="content-section">
+            {% block content %}
+            <section class="examples-section">
+                <h2>Example Questions</h2>
+                <ul>
+                    <li>Calculate the velocity of an object after falling for a given time under gravity.</li>
+                    <li>Determine the molarity of a solution given the moles of solute and the volume of the solution.</li>
+                    <li>Solve for the roots of a quadratic equation given its coefficients.</li>
+                    <li>Calculate the energy required to heat a substance from one temperature to another.</li>
+                    <li>Calculate the compound interest for a given principal amount, interest rate, and time period.</li>
+                </ul>
+            </section>
+            {% endblock %}
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Formula Calculator. Made by muheed and team Joint for Gen-Z. | <a href="#">Privacy Policy</a></p>
+    </footer>
+    <script>
+        function showLoadingScreen() {
+            document.getElementById('loading-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
