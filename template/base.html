@@ -3,43 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Home - Formula Calculator{% endblock %}</title>
+    <title>{% block title %}Premium Formula Calculator{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div id="loading-screen" class="loading-screen">
         <div class="spinner"></div>
-        <p>Loading, please wait...</p>
+        <p><i class="fas fa-square-root-alt"></i> Computing Excellence...</p>
     </div>
-    <header>
-        <h1>Welcome to the Formula Calculator</h1>
-        <p>Calculate formulas dynamically with Team Joint</p>
+
+    <header class="premium-header">
+        <h1><i class="fas fa-calculator"></i> Formula Calculator</h1>
+        <p>Precision Engineering by Team Joint</p>
     </header>
-    <main>
-        <section class="form-section">
+
+    <main class="premium-container">
+        <section class="form-section glass-effect">
             <form action="{{ url_for('ask') }}" method="post" onsubmit="showLoadingScreen()">
-                <input type="text" name="user_input" placeholder="Enter what to calculate" required>
-                <input type="submit" value="Calculate">
+                <div class="input-wrapper">
+                    <i class="fas fa-function"></i>
+                    <input type="text" name="user_input" placeholder="Enter your calculation query" required>
+                </div>
+                <button type="submit" class="premium-button">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
             </form>
         </section>
+
         <section class="content-section">
             {% block content %}
-            <section class="examples-section">
-                <h2>Example Questions</h2>
-                <ul>
-                    <li>Calculate the velocity of an object after falling for a given time under gravity.</li>
-                    <li>Determine the molarity of a solution given the moles of solute and the volume of the solution.</li>
-                    <li>Solve for the roots of a quadratic equation given its coefficients.</li>
-                    <li>Calculate the energy required to heat a substance from one temperature to another.</li>
-                    <li>Calculate the compound interest for a given principal amount, interest rate, and time period.</li>
+            <section class="examples-section glass-effect">
+                <h2><i class="fas fa-lightbulb"></i> Example Calculations</h2>
+                <ul class="examples-list">
+                    <li>
+                        <i class="fas fa-meteor"></i>
+                        <span>Calculate the velocity of an object after falling for a given time under gravity.</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-flask"></i>
+                        <span>Determine the molarity of a solution given the moles of solute and the volume of the solution.</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-square-root-alt"></i>
+                        <span>Solve for the roots of a quadratic equation given its coefficients.</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-temperature-high"></i>
+                        <span>Calculate the energy required to heat a substance from one temperature to another.</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-chart-line"></i>
+                        <span>Calculate the compound interest for a given principal amount, interest rate, and time period.</span>
+                    </li>
                 </ul>
             </section>
             {% endblock %}
         </section>
     </main>
-    <footer>
-        <p>&copy; 2025 Formula Calculator. Made by muheed and team Joint for Gen-Z. | <a href="#">Privacy Policy</a></p>
+
+    <footer class="premium-footer">
+        <p>&copy; 2025 Formula Calculator <i class="fas fa-gem"></i> Crafted by muheed and team Joint</p>
     </footer>
     <script>
         function showLoadingScreen() {

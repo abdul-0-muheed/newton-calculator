@@ -1,27 +1,100 @@
 {% extends 'base.html' %}
 {% block title %}Calculation Results{% endblock %}
 {% block content %}
-<section class="results-section">
-    <h2>Calculation Results</h2>
-
-    <div class="result-block">
-        <h3>Used Equation:</h3>
-        <p class="equation">{{ formulas_global|safe }}</p>
+<section class="results-container glass-effect">
+    <!-- Title in separate row -->
+    <div class="results-title">
+        <h2><i class="fas fa-chart-line"></i> Calculation Results</h2>
     </div>
 
-    <div class="result-block">
-        <h3>Output:</h3>
-        <p class="output">{{ Output }}</p>
+    <!-- Formula and Result cards -->
+    <div class="results-content">
+        <div class="results-grid">
+            <div class="result-card">
+                <div class="card-header">
+                    <i class="fas fa-square-root-alt"></i>
+                    <h3>Formula</h3>
+                </div>
+                <div class="card-content formula">
+                    {{ formulas_global|safe }}
+                </div>
+            </div>
+
+            <div class="result-card highlight">
+                <div class="card-header">
+                    <i class="fas fa-equals"></i>
+                    <h3>Result</h3>
+                </div>
+                <div class="card-content">
+                    {{ Output }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Solution Steps in next row -->
+        <div class="result-card full-width">
+            <div class="card-header">
+                <i class="fas fa-list-ol"></i>
+                <h3>Solution Steps</h3>
+            </div>
+            <div class="card-content">
+                {{ detailresponse|safe }}
+            </div>
+        </div>
     </div>
 
-    <div class="result-block">
-        <h3>Step-by-Step Method:</h3>
-        <p class="steps">{{ detailresponse|safe }}</p>
-    </div>
-
-    <div class="action-buttons">
-        <a href="{{ url_for('index') }}" class="btn">Go Back</a>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">New Calculation</a>
+    <div class="button-group">
+        <a href="{{ url_for('index') }}" class="premium-button outline">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <a href="{{ url_for('index') }}" class="premium-button">
+            <i class="fas fa-redo"></i> New Calculation
+        </a>
     </div>
 </section>
+
+<style>
+.results-container {
+    padding: 2rem;
+}
+
+.results-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
+}
+
+.results-title h2 {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+.results-content {
+    margin-top: 2rem;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .results-title h2 {
+        font-size: 1.5rem;
+    }
+}
+</style>
 {% endblock %}
