@@ -163,7 +163,7 @@ def ask():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "deepseek/deepseek-chat-v3-0324:free",
+            "model": "google/gemini-2.0-flash-thinking-exp:free",
             "messages": [
                 {
                     "role": "user",
@@ -222,7 +222,7 @@ def test():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "openrouter/optimus-alpha",
+            "model": "google/gemini-2.0-flash-thinking-exp:free",
             "messages": [
                 {
                     "role": "user",
@@ -308,7 +308,7 @@ def call():
                     "Content-Type": "application/json",
                 },
                 data=json.dumps({
-                    "model": "openrouter/optimus-alpha",
+                    "model": "google/gemini-2.0-flash-thinking-exp:free",
                     "messages": [
                         {
                             "role": "user",
