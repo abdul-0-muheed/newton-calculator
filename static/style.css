@@ -255,18 +255,16 @@ footer a:hover {
 
 /* Loading screen styling */
 .loading-screen {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
-    color: #fff;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    z-index: 1000;
 }
 
 .loading-screen .spinner {
@@ -292,6 +290,87 @@ footer a:hover {
     font-size: 1.2rem;
     font-weight: 600;
     color: #d4af37; /* Gold color */
+}
+
+.loading-content {
+    text-align: center;
+}
+
+/* Game container styling */
+.game-container {
+    padding: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Game header styling */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+/* Score board styling */
+.score-board {
+    display: flex;
+    gap: 20px;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.score-board div {
+    padding: 5px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+/* Tetris styling */
+#tetris {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    aspect-ratio: 0.6;
+    touch-action: none;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Game controls styling */
+.game-controls {
+    margin-top: 20px;
+    color: #fff;
+}
+
+/* Controls info styling */
+.controls-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    flex-wrap: wrap;
+    padding: 10px;
+}
+
+.controls-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.controls-info i {
+    color: #0DC2FF;
 }
 
 /* Example questions styling */
@@ -480,6 +559,32 @@ footer a:hover {
     
     .premium-button {
         width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .score-board {
+        font-size: 1rem;
+        gap: 10px;
+    }
+    
+    .score-board div {
+        padding: 3px 10px;
+    }
+    
+    .controls-info {
+        font-size: 0.8rem;
+        gap: 10px;
+    }
+    
+    .controls-info span {
+        flex: 1 1 40%;
         justify-content: center;
     }
 }
