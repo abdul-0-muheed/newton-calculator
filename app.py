@@ -16,6 +16,18 @@ flask_final = None
 
 @app.route('/')
 def index():
+    global user_input_global
+    global detailresponse
+    global formulas_global
+    global Output
+    global htmll_final
+    global flask_final
+    user_input_global = None
+    detailresponse = None
+    formulas_global = None
+    Output = None
+    htmll_final = None
+    flask_final = None
     return render_template('base.html')
 
 @app.route('/ask', methods=['POST'])
