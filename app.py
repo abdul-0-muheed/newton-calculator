@@ -3,7 +3,11 @@ import requests
 import json
 import textwrap 
 import math
-API_KEY = "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"
+API_KEY1 = "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"
+API_KEY2 = "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"
+API_KEY3 = "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"
+API_KEY4 = "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"
+API_KEY5 = "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"
 
 app=Flask(__name__,template_folder='template', static_folder='static')
 
@@ -58,7 +62,7 @@ def ask():
     detailresp = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {API_KEY1}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost",  
             "X-Title": "DeepSeekTerminalApp"     
@@ -110,7 +114,7 @@ def ask():
     formulas = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {API_KEY2}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost", 
             "X-Title": "DeepSeekTerminalApp"     
@@ -169,7 +173,7 @@ def ask():
     htmlll = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {API_KEY3}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost", 
             "X-Title": "DeepSeekTerminalApp"     
@@ -228,7 +232,7 @@ def test():
     flaskout = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {API_KEY4}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost",  
             "X-Title": "DeepSeekTerminalApp"     
@@ -316,7 +320,7 @@ def call():
             compute_response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {API_KEY}",
+                    "Authorization": f"Bearer {API_KEY5}",
                     "Content-Type": "application/json",
                 },
                 data=json.dumps({
