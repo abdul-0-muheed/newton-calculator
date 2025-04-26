@@ -3,6 +3,7 @@ import requests
 import json
 import textwrap 
 import math
+import mysql.connector
 API_KEY1 = "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"
 API_KEY2 = "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"
 API_KEY3 = "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"
@@ -68,7 +69,7 @@ def ask():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "google/gemini-2.0-flash-thinking-exp:free",
+            "model": "google/gemini-2.0-flash-exp:free",
             "messages": [
                 {
                     "role": "user",
@@ -120,7 +121,7 @@ def ask():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "google/gemini-2.0-flash-thinking-exp:free",
+            "model": "google/gemini-2.0-flash-exp:free",
             "messages": [
                 {
                     "role": "user",
@@ -179,7 +180,7 @@ def ask():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "google/gemini-2.0-flash-thinking-exp:free",
+            "model": "google/gemini-2.0-flash-exp:free",
             "messages": [
                 {
                     "role": "user",
@@ -210,25 +211,30 @@ def test():
     global htmll_final
     global formulas_global
     global flask_final
-    falskprompt=f"""Generate only the Python code to be inserted inside this Flask function template based on the given equation and HTML form inputs. Do not include any explanations, comments, or output except for the generated Python code inside the allocated section.
+    falskprompt = f"""Generate Python code that collects form inputs and assigns the final result to Output variable.
 
-    Template:
+            Given equation: '{formulas_global}'
+            Given HTML form: '{htmll_final}'
 
-    @app.route('/call', methods=['POST'])
-    def call():
-      global detailresponse
-      global formulas_global
-      global Output
+            IMPORTANT: The code MUST assign the final result to 'Output' variable with proper units.
 
-      <-- generated code here -->
+            Format requirements:
+            1. Collect all form inputs as variables
+            2. Create calculation expression
+            3. Assign result to Output with units
 
-      # Save the final output to the Output variable and dont assign any for detailresponse,formulas_global
+            Example format:
+            # Collect inputs individually
+            radius = float(request.form.get('radius', 0))
+            height = float(request.form.get('height', 0))
 
-    Given equation: '{formulas_global}'
-    Given HTML form: '{htmll_final}'
+            # Calculate result
+            result = 3.14159 * radius * height
 
-    Only return the Python code to be inserted at '<-- generated code here -->'. Do not add any additional words or explanations.
-    """
+            # REQUIRED: Assign to Output with units
+            Output = f"{{result:.2f}} cubic meters"
+
+            Return only the Python code that collects inputs and assigns to Output. No decorators or explanations."""
     flaskout = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
@@ -238,14 +244,14 @@ def test():
             "X-Title": "DeepSeekTerminalApp"     
         },
         data=json.dumps({
-            "model": "google/gemini-2.0-flash-thinking-exp:free",
+            "model": "google/gemini-2.0-flash-exp:free",
             "messages": [
                 {
                     "role": "user",
                     "content": falskprompt
                 }
             ],
-            "max_tokens": 1
+            "max_tokens": 1000
         })
     )
     data4 = flaskout.json()
@@ -256,6 +262,7 @@ def test():
         print("Error: 'choices' key not found or empty in the response")
     flask_final = flask_final.replace("```python", "")  
     flask_final = flask_final.replace("```", "")
+    print("flask code :")
     print(flask_final)
     
 
@@ -266,50 +273,37 @@ def call():
     global Output
     global flask_final
 
-   
-    if flask_final is None:
-        print("Error: flask_final is None")
-        return "Error: flask_final is None", 500
+    try:
+        if not flask_final:
+            return "Error: No calculation code available", 400
 
-   
-    if request.method == 'POST':
-        user_inputs = request.form.to_dict()  
-    elif request.method == 'GET':
-        user_inputs = request.args.to_dict() 
-    else:
-        user_inputs = {}
+        # Clean up the code string by removing extra indentation
+        cleaned_code = "\n".join(line.strip() for line in str(flask_final).splitlines())
 
-    print(f"Collected user inputs: {user_inputs}")
+        # Create namespace for execution
+        namespace = {
+            'request': request,
+            'float': float,
+            'math': math,
+            'Output': None
+        }
 
+        # Execute the cleaned code
+        exec(cleaned_code, namespace)
+        
+        # Get the result
+        Output = namespace.get('Output', 'Calculation failed')
+        print(f"Calculation result: {Output}")
 
-    max_retries = 1 
-    for attempt in range(max_retries):
-       
-        if "global Output" not in flask_final:
-            flask_final = f"global Output and error\n{flask_final}"
-
-       
-        try:
-            flask_final = textwrap.dedent(flask_final)
-        except Exception as e:
-            print(f"Error normalizing flask_final indentation: {e}")
-            return f"Error normalizing flask_final indentation: {e}", 500
-
-       
-        print(f"Attempt {attempt + 1}: Executing flask_final:")
-        print(flask_final)
-
-       
-        try:
-            exec(flask_final, globals()) 
-            if Output is None:
-                raise ValueError("Output is None after execution")
-            break 
-        except Exception as e:
-            print(f"executing flask_final: ")
-
-           
-            compute_prompt = f"""
+    except Exception as e:
+        if request.method == 'POST':
+             user_inputs = request.form.to_dict()  
+        elif request.method == 'GET':
+             user_inputs = request.args.to_dict() 
+        else:
+             user_inputs = {}
+        print(f"Collected user inputs: {user_inputs}")
+        compute_prompt = f"""
             Compute the result of the following equation using the provided inputs:
 
             Equation: {formulas_global}
@@ -317,14 +311,15 @@ def call():
 
             Return only the computed result as a number or string with Unit . Do not include any explanations or additional text.
             """
-            compute_response = requests.post(
+        print("the pycode is not working")
+        compute_response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {API_KEY5}",
                     "Content-Type": "application/json",
                 },
                 data=json.dumps({
-                    "model": "google/gemini-2.0-flash-thinking-exp:free",
+                    "model": "google/gemini-2.0-flash-exp:free",
                     "messages": [
                         {
                             "role": "user",
@@ -334,20 +329,18 @@ def call():
                     "max_tokens": 10000
                 })
             )
-            compute_data = compute_response.json()
-            if "choices" in compute_data and len(compute_data["choices"]) > 0:
-                Output = compute_data["choices"][0]["message"]["content"]
-                print(f"final-computed Output: {Output}")
-                break  
-            else:
-                print("Error: Failed to compute the result from the API")
-                return "Error: Failed to compute the result from the API", 500
+        compute_data = compute_response.json()
+        if "choices" in compute_data and len(compute_data["choices"]) > 0:
+            Output = compute_data["choices"][0]["message"]["content"]
+            print(f"final-computed Output: {Output}")  
+        else:
+            print("Error: Failed to compute the result from the API")
+            return "Error: Failed to compute the result from the API", 500    
 
-
-    print("Value of Output after executing flask_final:", Output)
-
-   
-    return render_template('output.html', formulas_global=formulas_global, Output=Output, detailresponse=detailresponse)
+    return render_template('output.html', 
+                         formulas_global=formulas_global, 
+                         Output=Output, 
+                         detailresponse=detailresponse)
 
 
 if __name__ == "__main__":
