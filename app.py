@@ -6,6 +6,17 @@ import math
 import mysql.connector
 from rake_nltk import Rake
 import nltk
+import ssl
+import os
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+nltk.download('punkt')
 nltk.download('stopwords')
 r = Rake()
 
@@ -500,4 +511,5 @@ def find_matching_calculation(keywords):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
