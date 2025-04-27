@@ -5,7 +5,8 @@ import textwrap
 import math
 import mysql.connector
 from rake_nltk import Rake
-
+import nltk
+nltk.download('stopwords')
 r = Rake()
 
 API_KEY1 = "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"
