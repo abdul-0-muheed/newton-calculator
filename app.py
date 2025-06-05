@@ -8,6 +8,8 @@ from rake_nltk import Rake
 import nltk
 import ssl
 import os
+import google.generativeai as genai
+from dotenv import load_dotenv
 
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -19,12 +21,24 @@ else:
 nltk.download('punkt')
 nltk.download('stopwords')
 r = Rake()
+load_dotenv()
+# API_KEY1 = "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"
+# API_KEY2 = "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"
+# API_KEY3 = "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"
+# API_KEY4 = "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"
+# API_KEY5 = "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"
 
-API_KEY1 = "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"
-API_KEY2 = "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"
-API_KEY3 = "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"
-API_KEY4 = "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"
-API_KEY5 = "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"
+api_key= os.getenv("api_key")
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel(os.getenv("model_name"))
+
+def llm_response(prompt): # updated to accept prompt as a request body
+    try:
+        response = model.generate_content(prompt) # Use await for async operation
+        return response.text  # Return response as a dictionary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating response: {e}")
+
 
 def get_db_connection():
     try:
@@ -117,34 +131,39 @@ def ask():
                             Format the response with proper HTML5 structure using semantic tags like <section>, <article>, and <aside>.""" 
         print("User Input:", user_input_global)
 
-        detailresp = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {API_KEY1}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost",  
-                "X-Title": "DeepSeekTerminalApp"     
-            },
-            data=json.dumps({
-                "model": "google/gemini-2.0-flash-exp:free",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": user_input_global
-                    }
-                ],
-                "max_tokens": 100000
-            })
-        )
+        # detailresp = requests.post(
+        #     url="https://openrouter.ai/api/v1/chat/completions",
+        #     headers={
+        #         "Authorization": f"Bearer {API_KEY1}",
+        #         "Content-Type": "application/json",
+        #         "HTTP-Referer": "http://localhost",  
+        #         "X-Title": "DeepSeekTerminalApp"     
+        #     },
+        #     data=json.dumps({
+        #         "model": "google/gemini-2.0-flash-exp:free",
+        #         "messages": [
+        #             {
+        #                 "role": "user",
+        #                 "content": user_input_global
+        #             }
+        #         ],
+        #         "max_tokens": 100000
+        #     })
+        # )
+        detailresp=llm_response(user_input_global) #maked a gemmini
         print("frist api request done")
-        data1 = detailresp.json()
-        if "choices" in data1 and len(data1["choices"]) > 0:
-            detailresponse = data1["choices"][0]["message"]["content"]
-            detailresponse = detailresponse.replace("```html", "").replace("```", "")
+        # print(detailresp)
+        data1 = detailresp
+        # if "choices" in data1 and len(data1["choices"]) > 0:
+        #     detailresponse = data1["choices"][0]["message"]["content"]
+        #     detailresponse = detailresponse.replace("```html", "").replace("```", "")
 
+        #     print(f"🤖: {detailresponse}")
+        # else:
+        #     print("Error: 'choices' key not found or empty in the response")
+        if data1:
+            detailresponse =data1.replace("```html", "").replace("```", "")
             print(f"🤖: {detailresponse}")
-        else:
-            print("Error: 'choices' key not found or empty in the response")
 
         formulaset = f"""Extract or generate a key formula from the given HTML content:
 
@@ -170,32 +189,39 @@ def ask():
                         - Example calculations"""
         
         print ("second code request done")
-        formulas = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {API_KEY2}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost", 
-                "X-Title": "DeepSeekTerminalApp"     
-            },
-            data=json.dumps({
-                "model": "google/gemini-2.0-flash-exp:free",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": formulaset
-                    }
-                ],
-                "max_tokens": 1000
-            })
-        )
-        data2 = formulas.json()
-        if "choices" in data2 and len(data2["choices"]) > 0:
-            formulas_global = data2["choices"][0]["message"]["content"]
-            formulas_global = formulas_global.replace("```html", "").replace("```", "")
-            print(f"🤖: {formulas_global}")
+        # formulas = requests.post(
+        #     url="https://openrouter.ai/api/v1/chat/completions",
+        #     headers={
+        #         "Authorization": f"Bearer {API_KEY2}",
+        #         "Content-Type": "application/json",
+        #         "HTTP-Referer": "http://localhost", 
+        #         "X-Title": "DeepSeekTerminalApp"     
+        #     },
+        #     data=json.dumps({
+        #         "model": "google/gemini-2.0-flash-exp:free",
+        #         "messages": [
+        #             {
+        #                 "role": "user",
+        #                 "content": formulaset
+        #             }
+        #         ],
+        #         "max_tokens": 1000
+        #     })
+        # )
+        formulas=llm_response(formulaset)
+        data2 = formulas
+        # if "choices" in data2 and len(data2["choices"]) > 0:
+        #     formulas_global = data2["choices"][0]["message"]["content"]
+        #     formulas_global = formulas_global.replace("```html", "").replace("```", "")
+        #     print(f"🤖: {formulas_global}")
+        # else:
+        #     print("Error: 'choices' key not found or empty in the response")
+        if data2:
+            formulas_global = data2.replace("```html", "").replace("```", "")
+            print(f"🤖: {formulas_global}")   
         else:
-            print("Error: 'choices' key not found or empty in the response")
+            print("Error: 'choices' key not found or empty in the response")  
+
         print("third code request done")
         htmlcode = f"""Create an HTML form for the following formula with specific input fields:
 
@@ -229,34 +255,40 @@ def ask():
 
         Return only the complete HTML template code without any explanations."""
 
-        htmlll = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {API_KEY3}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost", 
-                "X-Title": "DeepSeekTerminalApp"     
-            },
-            data=json.dumps({
-                "model": "google/gemini-2.0-flash-exp:free",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": htmlcode
-                    }
-                ],
-                "max_tokens": 10000
-            })
-        )
-        data3 = htmlll.json()
-        if "choices" in data3 and len(data3["choices"]) > 0:
-            htmll_final = data3["choices"][0]["message"]["content"]
-            print(f"🤖: {htmll_final}")
-            htmll_final = htmll_final.replace("```html", "").replace("```", "")
+        # htmlll = requests.post(
+        #     url="https://openrouter.ai/api/v1/chat/completions",
+        #     headers={
+        #         "Authorization": f"Bearer {API_KEY3}",
+        #         "Content-Type": "application/json",
+        #         "HTTP-Referer": "http://localhost", 
+        #         "X-Title": "DeepSeekTerminalApp"     
+        #     },
+        #     data=json.dumps({
+        #         "model": "google/gemini-2.0-flash-exp:free",
+        #         "messages": [
+        #             {
+        #                 "role": "user",
+        #                 "content": htmlcode
+        #             }
+        #         ],
+        #         "max_tokens": 10000
+        #     })
+        # )
+        htmlll=llm_response(htmlcode)
+        data3 = htmlll
+        # if "choices" in data3 and len(data3["choices"]) > 0:
+        #     htmll_final = data3["choices"][0]["message"]["content"]
+        #     print(f"🤖: {htmll_final}")
+        #     htmll_final = htmll_final.replace("```html", "").replace("```", "")
+        # else:
+        #     print("Error: 'choices' key not found or empty in the response")
+        #     htmll_final = None  
+        if data3:
+            htmll_final = data3.replace("```html", "").replace("```", "")
+            print(htmll_final)
         else:
             print("Error: 'choices' key not found or empty in the response")
-            htmll_final = None  
-
+            htmll_final = None
     
         if htmll_final is None:
             print("Error: htmll_final is None")
@@ -295,35 +327,42 @@ def test():
             Output = f"{{result:.2f}} cubic meters"
 
             Return only the Python code that collects inputs and assigns to Output. No decorators or explanations."""
-    flaskout = requests.post(
-        url="https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {API_KEY4}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost",  
-            "X-Title": "DeepSeekTerminalApp"     
-        },
-        data=json.dumps({
-            "model": "google/gemini-2.0-flash-exp:free",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": falskprompt
-                }
-            ],
-            "max_tokens": 1000
-        })
-    )
-    data4 = flaskout.json()
-    if "choices" in data4 and len(data4["choices"]) > 0:
-        flask_final = data4["choices"][0]["message"]["content"]
-        print(f"🤖:")
+    # flaskout = requests.post(
+    #     url="https://openrouter.ai/api/v1/chat/completions",
+    #     headers={
+    #         "Authorization": f"Bearer {API_KEY4}",
+    #         "Content-Type": "application/json",
+    #         "HTTP-Referer": "http://localhost",  
+    #         "X-Title": "DeepSeekTerminalApp"     
+    #     },
+    #     data=json.dumps({
+    #         "model": "google/gemini-2.0-flash-exp:free",
+    #         "messages": [
+    #             {
+    #                 "role": "user",
+    #                 "content": falskprompt
+    #             }
+    #         ],
+    #         "max_tokens": 1000
+    #     })
+    # )
+    flaskout=llm_response(falskprompt)
+    data4 = flaskout
+    # if "choices" in data4 and len(data4["choices"]) > 0:
+    #     flask_final = data4["choices"][0]["message"]["content"]
+    #     print(f"🤖:")
+    # else:
+    #     print("Error: 'choices' key not found or empty in the response")
+    if data4:
+        flask_final = data4.replace("```python", "")  
+        flask_final = flask_final.replace("```", "")
+        print("flask code :")
+        print(flask_final)
     else:
-        print("Error: 'choices' key not found or empty in the response")
-    flask_final = flask_final.replace("```python", "")  
-    flask_final = flask_final.replace("```", "")
-    print("flask code :")
-    print(flask_final)
+        print("Error: 'choices' key not found or empty in the response") 
+
+  
+    
     if detailresponse and formulas_global and htmll_final and flask_final:
         try:
             # Get fresh connection
@@ -332,26 +371,26 @@ def test():
                 print("Failed to connect to database")
                 return
                 
-            cursor = db.cursor()
-            context = ', '.join(keywords)
-            query = """
-            INSERT INTO calculations 
-            (context, htmlpage, formula, formpage, python) 
-            VALUES (%s, %s, %s, %s, %s)
-            """
+        #     cursor = db.cursor()
+        #     context = ', '.join(keywords)
+        #     query = """
+        #     INSERT INTO calculations 
+        #     (context, htmlpage, formula, formpage, python) 
+        #     VALUES (%s, %s, %s, %s, %s)
+        #     """
 
-            cursor.execute(query, (context, detailresponse, formulas_global, htmll_final, flask_final))
-            db.commit()
-            print("Data inserted successfully")
+        #     cursor.execute(query, (context, detailresponse, formulas_global, htmll_final, flask_final))
+        #     db.commit()
+        #     print("Data inserted successfully")
         except mysql.connector.Error as err:
             print(f"Database Error: {err}")    
-            if db:
-                db.rollback()
-        finally:
-            if cursor:
-                cursor.close()
-            if db:
-                db.close()
+        #     if db:
+        #         db.rollback()
+        # finally:
+        #     if cursor:
+        #         cursor.close()
+        #     if db:
+        #         db.close()
     
 
 @app.route('/call', methods=['POST', 'GET'])
@@ -401,30 +440,36 @@ def call():
             Return only the computed result as a number or string with Unit . Do not include any explanations or additional text.
             """
         print("the pycode is not working")
-        compute_response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {API_KEY5}",
-                    "Content-Type": "application/json",
-                },
-                data=json.dumps({
-                    "model": "google/gemini-2.0-flash-exp:free",
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": compute_prompt
-                        }
-                    ],
-                    "max_tokens": 10000
-                })
-            )
-        compute_data = compute_response.json()
-        if "choices" in compute_data and len(compute_data["choices"]) > 0:
-            Output = compute_data["choices"][0]["message"]["content"]
-            print(f"final-computed Output: {Output}")  
+        # compute_response = requests.post(
+        #         url="https://openrouter.ai/api/v1/chat/completions",
+        #         headers={
+        #             "Authorization": f"Bearer {API_KEY5}",
+        #             "Content-Type": "application/json",
+        #         },
+        #         data=json.dumps({
+        #             "model": "google/gemini-2.0-flash-exp:free",
+        #             "messages": [
+        #                 {
+        #                     "role": "user",
+        #                     "content": compute_prompt
+        #                 }
+        #             ],
+        #             "max_tokens": 10000
+        #         })
+        #     )
+        compute_response=llm_response(compute_prompt)
+        compute_data = compute_response
+        # if "choices" in compute_data and len(compute_data["choices"]) > 0:
+        #     Output = compute_data["choices"][0]["message"]["content"]
+        #     print(f"final-computed Output: {Output}")  
+        # else:
+        #     print("Error: Failed to compute the result from the API")
+        #     return "Error: Failed to compute the result from the API", 500  
+        if compute_data:
+            print(compute_data)  
         else:
             print("Error: Failed to compute the result from the API")
-            return "Error: Failed to compute the result from the API", 500    
+            return "Error: Failed to compute the result from the API", 500 
 
     return render_template('output.html', 
                          formulas_global=formulas_global, 
@@ -436,8 +481,11 @@ def find_matching_calculation(keywords):
     if not db:
         print("Failed to connect to database")
         return None
-        
-    cursor = db.cursor(dictionary=True)
+    try:    
+        # cursor = db.cursor(dictionary=True)
+        print()
+    except:
+        print("skip database")    
     try:
         print(f"Searching for keywords: {keywords}")
         
@@ -491,13 +539,13 @@ def find_matching_calculation(keywords):
         LIMIT 1
         """
         
-        cursor.execute(query)
-        result = cursor.fetchone()
+        # cursor.execute(query)
+        # result = cursor.fetchone()
         
-        if result:
-            print(f"Found match with score: {result['match_score']}")
-            print(f"Matching context: {result['context']}")
-            return result
+        # if result:
+        #     print(f"Found match with score: {result['match_score']}")
+        #     print(f"Matching context: {result['context']}")
+        #     return result
         
         print("No matching calculation found")
         return None
@@ -505,9 +553,9 @@ def find_matching_calculation(keywords):
     except Exception as e:
         print(f"Database error: {e}")
         return None
-    finally:
-        cursor.close()
-        db.close()
+    # finally:
+    #     cursor.close()
+    #     db.close()
 
 
 if __name__ == "__main__":
