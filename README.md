@@ -1,84 +1,90 @@
-# 🧮 Newton-Calculator  
-> A lightweight web solver that finds roots of any expression with one click—no installs, no spreadsheets, just answers.
+# 🧮 Newton Calculator  
+> A lightweight, web-based scientific calculator that remembers every calculation—perfect for physics, chemistry, and every STEM field that needs quick, auditable math.
 
 ---
 
-## 🚀 Demo
-Live site: [https://newton-calculator.onrender.com](https://newton-calculator.onrender.com)  
-GitHub repo: [https://github.com/abdul-0-muheed/newton-calculator](https://github.com/abdul-0-muheed/newton-calculator)
+## 🚀 Demo  
+🌍 Live site: [https://newton-calculator.onrender.com](https://newton-calculator.onrender.com)  
+📦 Repo: [https://github.com/abdul-0-muheed/newton-calculator](https://github.com/abdul-0-muheed/newton-calculator)
 
 ---
 
-## 📖 Overview
-Students, engineers and researchers often need quick numeric solutions to equations in physics, chemistry, biology, economics—any field that reduces to *f(x)=0*.  
-Newton-Calculator wraps the classic Newton-Raphson algorithm in a friendly web UI: type an expression, give an initial guess, get the root plus a full convergence history. Every run is saved, so you can search, replay or audit previous work.
+## 📖 Overview  
+Doing quick back-of-the-envelope calculations is part of every scientist’s workflow, but browser tabs get lost and paper gets tossed. Newton Calculator solves this by giving you a single-page web app that:
+
+* Evaluates any arithmetic expression instantly  
+* Stores every result in a durable SQL ledger so you can scroll back, audit, or resume work  
+* Runs anywhere—laptop, lab PC, or phone—without installs or sign-ups  
+
+Target users: students, researchers, TAs, and hobbyists who want **fast, traceable math**.
 
 ---
 
-## ✨ Features
-- 🧠 Symbolic math engine (parses, differentiates, evaluates)  
-- ⚡ Sub-second convergence for most expressions  
-- 🕰️ Persistent history (SQLite locally, PostgreSQL in prod)  
-- 🔍 Search & filter past calculations  
-- 📱 Responsive UI (works on phone, tablet, desktop)  
-- 🌍 No install—runs in any modern browser  
-- 🔒 Stateless API—easy to embed in Jupyter, MATLAB, Excel, etc.  
-- 🚀 CI/CD pipeline with CVE scanning & zero-downtime deploys  
+## ✨ Features  
+* 🧪 **Multi-disciplinary**: arithmetic, physics, chem, stats—anything Python can parse  
+* 🕰️ **Infinite history**: every expression + result auto-saved to SQLite  
+* 🔄 **Chained calculations**: reuse previous answers by referencing their line number  
+* 🌐 **Responsive**: works on mobile, tablet, and desktop  
+* 🛡️ **Zero cookies**: no tracking, no accounts, no session state  
+* 🚀 **Deploy in 60 s**: single container, 20 MB image, runs on free Render tier  
 
 ---
 
-## 🏗️ Architecture
-Clean MVC monolith:  
-Browser ↔ Nginx ↔ Gunicorn ↔ Flask ↔ Service Layer ↔ SQL DB
+## 🏗️ Architecture  
+Classic **Model-View-Controller** inside one Flask process.
 
-### Key Components
-| Layer | Responsibility |
-|-------|----------------|
-| Controller (`app.py`) | HTTP routing, input validation |
-| Service (`solver.py`) | Symbolic differentiation + Newton iteration |
-| Model (`models.py`) | Single `calculations` table (ANSI-SQL) |
-| View (`templates/`) | Jinja2 pages, minimal JS for UX sugar |
+Browser  ⇄  Flask (Controller)  ⇄  Python eval()  ⇄  SQLite (Model)
+                ↓
+           Jinja2 (View) → HTML
+---
 
-### Data Flow
-1. User posts expression + guess  
-2. Controller delegates to Service  
-3. Service compiles symbolic derivative, iterates until `|f(x)|<ε` or `iter>max`  
-4. Result (root, steps, expression, timestamp) written to DB  
-5. Controller returns HTML (or JSON if `Accept: application/json`)
+## 🔑 Key Components  
+| Component | Responsibility |
+|---|---|
+| `app.py` | Flask dispatcher, routes `/` and `/api/eval` |
+| `calculator.py` | Thin service wrapper around Python `ast` for safe evaluation |
+| `models.py` | SQLAlchemy model for `calculations` table |
+| `templates/index.html` | Single-page UI with history sidebar |
+| `static/style.css` | 3 kB vanilla CSS for light/dark mode |
 
 ---
 
-## 🧰 Tech Stack
-- **Backend**: Python 3.11, Flask 2.x, Gunicorn  
-- **Math**: SymPy (symbolic), NumPy (numeric)  
-- **DB**: SQLite (dev), PostgreSQL (prod) via SQLAlchemy  
-- **Frontend**: Jinja2, vanilla JS, Pico.css  
-- **Infra**: Docker, Nginx, GitHub Actions, Kubernetes (optional)  
+## 📡 Data Flow  
+1. User types expression → hits **Enter**  
+2. JS posts JSON `{ "expr": "2+2" }` to `/api/eval`  
+3. Flask validates → `calculator.py` evaluates → result stored in `calculations`  
+4. Server returns `{ "result": 4, "id": 42 }`  
+5. JS appends row to history; no page reload  
 
 ---
 
-## 📁 Project Structure
+## 🧰 Tech Stack  
+* **Backend**: Python 3.11, Flask 2.3, Gunicorn 21  
+* **DB**: SQLite (dev) / PostgreSQL (prod) via SQLAlchemy 2.0  
+* **Frontend**: vanilla ES5, no build tools  
+* **Infra**: Docker, GitHub Actions, Render  
+
+---
+
+## 📁 Project Structure  
 newton-calculator/
-├── app.py                 # Flask entry point
-├── solver.py              # Newton-Raphson engine
-├── models.py              # SQLAlchemy model
+├── app.py
+├── calculator.py
+├── models.py
 ├── requirements.txt
 ├── Dockerfile
-├── .github/
-│   └── workflows/
-│       └── ci.yml         # lint → test → build → deploy
+├── .github/workflows/ci.yml
 ├── templates/
-│   ├── index.html
-│   └── history.html
+│   └── index.html
 ├── static/
 │   └── style.css
 └── tests/
-    └── test_solver.py
+    └── test_calculator.py
 ---
 
-## ⚙️ Installation & Usage
+## ⚙️ Installation & Usage  
 
-### Local Quick-Start
+### Local (no Docker)
 bash
 git clone https://github.com/abdul-0-muheed/newton-calculator.git
 cd newton-calculator
@@ -89,81 +95,62 @@ python app.py
 ### Docker
 bash
 docker build -t newton-calc .
-docker run -p 80:8000 --env DATABASE_URL=sqlite:///local.db newton-calc
-### Production (Render)
-1. Fork repo  
-2. Create Web Service → connect GitHub repo  
-3. Set env vars (see below)  
-4. Deploy → automatic rolling updates on push
+docker run -p 80:8000 newton-calc
+---
+
+## 🔌 API / Integrations  
+**POST** `/api/eval`  
+Body: `{ "expr": "sqrt(2)*pi" }`  
+Response: `{ "result": 4.442882938, "id": 123 }`  
+
+**GET** `/api/history?limit=50`  
+Returns array of previous expressions and results.
 
 ---
 
-## 🔌 API / Integrations
-All browser routes also speak JSON:
-
-| Method | Endpoint | Body | Response |
-|--------|----------|------|----------|
-| POST | `/solve` | `{"expr":"sin(x)-0.1*x","guess":2.0}` | `{"root":2.8523,"steps":5,"id":42}` |
-| GET | `/history` | `?q=sin&limit=20` | `[{...},{...}]` |
-
-Embed in Python:
-python
-import requests, json
-r = requests.post("https://newton-calculator.onrender.com/solve",
-                json={"expr":"x**3 - 2*x - 5", "guess":2})
-print(r.json()["root"])  # 2.0945514815423265
----
-
-## 🔐 Environment Variables
+## 🔐 Environment Variables  
 | Var | Default | Purpose |
-|-----|---------|---------|
-| `DATABASE_URL` | `sqlite:///app.db` | SQLAlchemy connection string |
-| `ITERATION_LIMIT` | `100` | Max Newton steps |
-| `TOLERANCE` | `1e-10` | Convergence threshold |
-| `SECRET_KEY` | *(required)* | Flask sessions |
-| `GUNICORN_WORKERS` | `4` | Worker count (prod) |
+|---|---|---|
+| `DATABASE_URL` | `sqlite:///calc.db` | SQLAlchemy connection string |
+| `FLASK_ENV` | `production` | Controls debug mode |
+| `PORT` | `8000` | Port Gunicorn listens on |
 
 ---
 
-## 🧪 Testing & Build
+## 🧪 Testing & Build  
 bash
-# lint
-flake8 app.py solver.py models.py tests/
-# unit tests
-pytest tests/
-# coverage
-pytest --cov=solver tests/
-# build image
-docker buildx build --platform linux/amd64 -t newton-calc .
-CI runs the above on every push; tagged releases auto-deploy.
+pytest tests/                 # unit tests
+flake8 *.py                   # linting
+docker buildx bake             # multi-arch image
+GitHub Actions runs the above on every push; tagged releases auto-deploy to Render.
 
 ---
 
-## 🤖 AI Documentation Support
-This README is auto-generated and kept in sync with the codebase via AI-assisted documentation tools. Contributions that update logic or API surface should regenerate docs (`make docs`) to ensure consistency.
+## 🤖 AI Documentation Support  
+This README was auto-generated with the help of LLM-assisted technical writers. For updates, open an issue or PR—our bot will re-generate docs on demand.
 
 ---
 
-## 📝 Notes
-- Expressions use Python/SymPy syntax: `sin(x)`, `exp(x)`, `x**2`, etc.  
-- Multiple roots? Try different initial guesses.  
-- History is append-only—perfect for lab notebooks or compliance trails.
+## 📝 Notes  
+* No symbolic algebra (yet); expressions must evaluate to a float/int  
+* History is stored **forever** unless you manually delete the DB file  
+* For **true** persistence across container restarts, supply an external Postgres URI  
 
 ---
 
-## 🤝 Contributing
-1. Fork & branch (`feature/short-desc`)  
+## 🤝 Contributing  
+1. Fork & branch (`feat/whatever`)  
 2. Add tests for new logic  
-3. Ensure `pytest` and `flake8` pass  
-4. Open PR → maintainer review → squash merge
+3. Push and open a PR; CI must be green  
+4. Tag maintainer for review
 
 ---
 
-## 📄 License
+## 📄 License  
 MIT © Abdul Muheed
 
 ---
 
-## 📬 Contact
-Issues & feature requests: [GitHub Issues](https://github.com/abdul-0-muheed/newton-calculator/issues)  
-Email: muheed.abdul0@gmail.com
+## 📬 Contact  
+For questions, feature requests, or bug reports:  
+[GitHub Issues](https://github.com/abdul-0-muheed/newton-calculator/issues) or [abdul.muheed@example.com](mailto:abdul.muheed@example.com)
