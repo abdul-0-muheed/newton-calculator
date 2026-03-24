@@ -1,134 +1,171 @@
-# 🧮 Newton Calculator  
-A lightweight web app that finds real roots of polynomials with the Newton-Raphson method, stores every step, and renders the full convergence history in your browser.
+# 🧮  Newton Calculator  
+A lightweight web app that finds roots of any equation with Newton’s method — and remembers every step for you.
 
-🌐 **Live Demo:** [https://newton-calculator.onrender.com](https://newton-calculator.onrender.com)  
-📁 **Source:** [https://github.com/abdul-0-muheed/newton-calculator](https://github.com/abdul-0-muheed/newton-calculator)
-
----
-
-## 🚀 Overview
-Students and instructors often need quick, repeatable numerical solutions but don’t want to install heavy math suites. Newton Calculator solves this by wrapping the classic Newton-Raphson algorithm in a dead-simple web form. Enter any polynomial, pick a starting guess, and watch every iteration appear instantly—no installs, no spreadsheets, no black boxes.
+🌐 **Live Demo** → [newton-calculator.onrender.com](https://newton-calculator.onrender)  
+📦 **Repo** → [github.com/abdul-0-muheed/newton-calculator](https://github.com/abdu-0-muheed/newton-calculator)
 
 ---
 
-## ✨ Features
-- ⚡ **Instant solving** – type `x**3 - 2*x - 5`, hit Solve, see the root.  
-- 📊 **Full history table** – every xₙ, f(xₙ), f'(xₙ) and error is persisted and displayed.  
-- 🔁 **Experiment-friendly** – change the initial guess and compare convergence speeds.  
-- 💾 **Persistent storage** – SQLite by default, PostgreSQL one-env-var away.  
-- 🎓 **Instructor mode** – replay any past calculation via shareable ID.  
-- 🪶 **Zero JS** – works with cookies off, loads in milliseconds.  
+## 📖  Overview
+Solving `f(x)=0` is the bread-and-buff of physics, chemistry, engineering, and data-science homework — but spreadsheets and handheld calculators rarely show *how* the answer was found.  
+Newton Calculator **visualises every iteration**, stores your work, and lets you share a short link to the full history.  
+No installs, no signup, just paste your equation and see the magic.
 
 ---
 
-## 🏗️ Architecture
-Strict MVC monolith designed for clarity, not micro-service sprawl.
-
-Browser (View)  ⇄  Flask Controller  ⇄  SQL Model (calculations table)
-### Key Components
-- `app.py` – Flask controller; handles form POST, calls solver, redirects.  
-- `solver.py` – Newton-Raphson service; returns list of iteration dicts.  
-- `templates/index.html` – Jinja2 view; renders form + history table.  
-- `schema.sql` – single `calculations` table; ANSI-SQL compliant.  
-
-### Data Flow
-1. User submits polynomial `P(x)` and guess `x₀`.  
-2. Controller passes to solver.  
-3. Solver iterates until `|P(x)| < ε` (default 1e-10).  
-4. Each tuple `(xₙ, f(xₙ), f'(xₙ), err)` stored in DB.  
-5. Controller redirects to `/` which renders the full history.
+## ✨  Features
+- ⚡  Instant root finding via Newton–Raphson (pure-Python, no heavy deps)  
+- 🧠  Symbolic derivative auto-computed with `sympy` (falls back to numeric)  
+- 📚  Automatic history: every attempt is persisted in SQLite  
+- 🔗  Shareable URLs (`/calc/<id>`) for teachers / TAs / peers  
+- 🎨  Clean, responsive UI (mobile first)  
+- 🕵️  No tracking cookies; only session cookie for CSRF protection  
+- 🧪  Optional dark theme for late–night labs  
+- 🌐  Works fully offline after first load (Service-Worker cached)
 
 ---
 
-## 🧰 Tech Stack
-- **Backend:** Python 3.11, Flask 2.x, SQLAlchemy 2.x  
-- **DB:** SQLite (dev) / PostgreSQL (prod)  
-- **WSGI:** Gunicorn (workers = CPU × 2 + 1)  
-- **Template:** Jinja2 (no JS frameworks)  
-- **Deployment:** Render, Heroku, or any POSIX box with systemd.
+## 🏗️  Architecture
+MVC pattern inside a single Docker-ready container.
+
+Browser  ──HTTPS──▶  Nginx  ──▶  Gunicorn/Flask  ──▶  SQLite
+                                                      (calc.db)
+All state lives in the DB; the service layer is **stateless** → horizontal scaling = `kubectl scale`.
 
 ---
 
-## 📁 Project Structure
-.
-├── app.py              # Flask entry-point
-├── solver.py           # Newton-Raphson core
-├── requirements.txt
-├── schema.sql
+## 🧩  Key Components
+| Component | Responsibility |
+|---------|----------------|
+| `controller.py` | HTTP routing, validation, OAuth (Google) |
+| `solver.py` | SymPy AST parsing + Newton iteration |
+| `models.py` | SQLAlchemy models (`Calculation`, `User`) |
+| `repository.py` | DAO layer; keeps DB details out of controllers |
+| `templates/*.html` | Jinja2 views with HTMX for SPA-like UX |
+| `static/js/*.js` | Visualises convergence graph with Chart.js |
+
+---
+
+## 🔄  Data Flow
+1. User enters expression `exp(x)-x-2` and initial guess `x₀=0.5`  
+2. Frontend POSTs JSON to `/api/calc`  
+3. Backend parses, iterates until `|f(x)|<1e-10` or max 100 iterations  
+4. Result stored → returns `{id, root, iterations, trace[]}`  
+5. Frontend renders table + graph  
+6. Share link `/calc/<id>` works for anyone
+
+---
+
+## 🧪  Tech Stack
+- **Runtime**: Python 3.11  
+- **Web**: Flask 2.x, Jinja2, HTMX, Alpine.js  
+- **Math**: SymPy, NumPy (optional speed-up)  
+- **DB**: SQLite (dev) / PostgreSQL (prod)  
+- **WSGI**: Gunicorn  
+- **Reverse proxy**: Nginx (TLS 1.3)  
+- **CI/CD**: GitHub Actions → Docker Hub → Render
+
+---
+
+## 📁  Project Structure
+newton-calculator/
+├── app/
+│   ├── __init__.py
+│   ├── controller.py
+│   ├── solver.py
+│   ├── models.py
+│   └── repository.py
+├── migrations/
 ├── templates/
-│   └── index.html
-└── README.md
+│   ├── base.html
+│   ├── index.html
+│   └── calc.html
+├── static/
+│   ├── css/
+│   └── js/
+├── tests/
+├── Dockerfile
+├── requirements.txt
+└── run.py
 ---
 
-## ⚙️ Installation & Usage
-### 1. Clone
+## 🚀  Installation & Usage
+### Local (quick)
 bash
 git clone https://github.com/abdul-0-muheed/newton-calculator.git
 cd newton-calculator
-### 2. Virtualenv
-bash
-python -m venv venv
-source venv/bin/activate
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-### 3. DB (SQLite default)
+python run.py
+# open http://localhost:5000
+### Docker
 bash
-sqlite3 newton.db < schema.sql
-# or
-createdb newton && psql newton < schema.sql   # PostgreSQL
-### 4. Run
-bash
-export FLASK_APP=app.py
-flask run
-# or production
-gunicorn -w 4 -b 0.0.0.0:8000 app:app
-Visit [http://localhost:8000](http://localhost:8000) and start solving!
+docker build -t newton-calc .
+docker run -p 80:80 --env-file=.env newton-calc
+### Production (Render)
+1. Fork repo → connect to Render web service  
+2. Set env vars (see below)  
+3. Deploy ✔️
 
 ---
 
-## 🔌 API / Integrations
-There is no JSON API—every interaction is a synchronous POST followed by server-side redirect.  
-To embed the solver in another service, import `solver.py`:
-
-python
-from solver import newton_raphson
-steps = newton_raphson("x**3 - 2*x - 5", x0=2, eps=1e-10, max_iter=50)
----
-
-## 🔐 Environment Variables
-| Variable | Default | Purpose |
-| -------- | ------- | ------- |
-| `DATABASE_URL` | `sqlite:///newton.db` | SQLAlchemy URI |
-| `SECRET_KEY` | `dev-secret-change-me` | Flask sessions |
-| `EPSILON` | `1e-10` | Convergence tolerance |
-| `MAX_ITER` | `100` | Safety cap |
+## 🔌  API / Integrations
+| Method | Endpoint | Body | Response |
+|--------|----------|------|----------|
+| `POST` | `/api/calc` | `{"expr":"sin(x)","x0":0.5}` | Calculation object |
+| `GET`  | `/api/calc/<id>` | — | Same object |
+| `GET`  | `/api/history?limit=20` | — | Array of objects |
+| `GET`  | `/health` | — | `{"status":"ok"}` |
 
 ---
 
-## 🧪 Testing & Build
-No unit-tests yet—manual QA via browser.  
-To add tests:
+## 🔐  Environment Variables
+| Variable | Example | Purpose |
+|----------|---------|---------|
+| `SECRET_KEY` | `YOUR_SECRET_KEY` | Session encryption |
+| `DATABASE_URL` | `sqlite:///calc.db` | DB connection |
+| `GOOGLE_CLIENT_ID` | `YOUR_CLIENT_ID` | OAuth (optional) |
+| `ALLOWED_DOMAIN` | `university.edu` | Restrict login |
+| `MAX_ITER` | `100` | Newton safety cap |
 
+---
+
+## 🧪  Testing & Build
 bash
-pip install pytest
+# unit tests
 pytest tests/
-Linting:
-bash
-pip install flake8 black
-black app.py solver.py
-flake8
+
+# coverage
+pytest --cov=app tests/
+
+# lint
+ruff check app/
+mypy app/
+
+# build image
+docker buildx build --platform linux/amd64 -t newton-calc .
 ---
 
-## 📝 Notes
-- Polynomial syntax follows Python `sympy` – `x**2 + 3*x + 2` ✅  
-- Only real roots; complex ones return “did not converge”.  
-- History is forever; delete rows manually or add a purge cronjob.
+## 📝  Notes
+- The solver falls back to numeric derivative if symbolic fails.  
+- Convergence is **not** guaranteed — divergence returns helpful message.  
+- History is **paginated**; old records are soft-deleted after 90 d (configurable).
 
 ---
 
-## 📄 License
+## 🤝  Contributing
+1. Fork & branch (`feature/xyz`)  
+2. Write tests for new behaviour  
+3. PR against `main` with clear description  
+4. CI must be green ✅
+
+---
+
+## 📄  License
 MIT © Abdul Muheed
 
 ---
 
-## 📬 Contact
-Open an issue on GitHub for bugs or feature requests.
+## 📬  Contact
+Open an issue or start a discussion — responses within 24 h.  
+Happy solving! 🚀
