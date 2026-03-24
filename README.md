@@ -125,14 +125,6 @@ flake8
 
 ---
 
-## 🤝 Contributing
-PRs welcome!  
-1. Fork, branch `feature/foo`.  
-2. Keep the MVC monolith spirit—no new micro-services.  
-3. Update this README if you change env vars or schema.
-
----
-
 ## 📄 License
 MIT © Abdul Muheed
 
